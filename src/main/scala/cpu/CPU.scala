@@ -54,6 +54,7 @@ class CPU extends Module {
     reg.io.Rs_addr := io.instr(25, 21)
     reg.io.Rt_addr := io.instr(20, 16)
 
+    reg.io.Rd_addr := 0.U
     switch(regDst) {
         is(0.U) {
             reg.io.Rd_addr := io.instr(20, 16);
@@ -90,6 +91,7 @@ class CPU extends Module {
     )
     //alu
     aluUse.io.A_in := reg.io.Rs_out
+    aluUse.io.B_in := 0.U
     switch(aluSrc) {
         is(0.U) {
             aluUse.io.B_in := reg.io.Rt_out
@@ -103,6 +105,7 @@ class CPU extends Module {
     }
     aluUse.io.ALU_op := aluCtr
 
+    busW := 0.U
     switch(whereToReg) {
         is(0.U) {
             busW := shifter.io.shift_out

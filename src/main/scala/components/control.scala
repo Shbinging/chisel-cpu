@@ -7,7 +7,7 @@ class control extends Module {
     val io = IO(
       new Bundle {
           val instr = Input(UInt(32.W))
-          val regDst = Output(UInt(1.W))
+          val regDst = Output(UInt(2.W))
           val exceptionEn = Output(UInt(1.W))
           val regWr = Output(UInt(1.W))
           val shifterSRC = Output(UInt(1.W))
@@ -88,17 +88,15 @@ class control extends Module {
             }.otherwise{
                 io.branchCond := 1.U
             }
-            when (op === "b100".U){
-                io.branchCond := 2.U
-            }
-            when(op === "b101".U){
-                io.branchCond := 3.U
-            }
+        }.elsewhen(op === "b100".U){
+            io.branchCond := 2.U
+        }.elsewhen(op === "b101".U){
+            io.branchCond := 3.U
         }
         io.jump := 0.U
     }.otherwise{//other
         io.regWr := 1.U;
-        io.regDst := Mux(op === "b11".U, 2.U, 0.U)
+        io.regDst := Mux(op === 3.U, 2.U, 0.U)
         io.exceptionEn := Mux(op === "b1000".U, 1.U, 0.U)
         when(VecInit("b1010".U, "b1011".U).contains(op)){
             io.whereToReg := 4.U;
@@ -118,10 +116,10 @@ class control extends Module {
         f 0
         (~d~e) +de
         ~d + ~e
-        ~c ~d + f
+        ~e ~d + f
         e
         */
-        io.aluCtr := Cat((~op(2) & ~ op(1) | op(2) & op(1)), ~op(2) | ~op(1), (~op(3) & ~op(2)) | op(0), op(1))
+        io.aluCtr := Cat((~op(2) & ~ op(1)) | (op(2) & op(1)), ~op(2) | ~op(1), (~op(1) & ~op(2)) | op(0), op(1))
         io.aluSrc := 1.U
         when(VecInit("b1000".U, "b1010".U, "b1011".U).contains(op)){
             io.extOp := 1.U

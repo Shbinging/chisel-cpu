@@ -18,38 +18,44 @@ class instrFetchUnit extends Module{
             val instr = Input(UInt(32.W))
             val pcOut = Output(UInt(30.W))
             val busA = Input(UInt(30.W))
+            val reset = Input(UInt(1.W))
         }
     )
-    val pc = RegInit(io.pcInit)
+    //val a = WireInit(io.pcInit)
+    val pc = Reg(UInt(30.W))
+    when(io.reset.asBool()){
+        pc := io.pcInit
+        io.pcOut := io.pcInit
+    }
     io.pcOut := pc
-    val signExtend  = WireInit(cat(Fill(14, io.instr(15)), io.instr(15, 0)))
-    val pcNew = WireInit(pc + 1.U)
-    val pcBranch = WireInit(pcNew + signExtend.asSInt())
-    val branchCondRes = Wire(UInt(1.W))
-    switch(io.branch){
+    val signExtend  = WireInit(Cat(Fill(14, io.instr(15)), io.instr(15, 0)))
+    val branchCondRes = WireInit(0.U(1.W))
+    switch(io.branchCond){
         is(0.U){
-            branchCondRes:= ~less;
+            branchCondRes:= ~io.less;
         }
         is(1.U){
-            branchCondRes:= less;
+            branchCondRes:= io.less;
         }
         is (2.U){
-            branchCondRes := zero;
+            branchCondRes := io.zero;
         }
         is (3.U){
-            branchCondRes := ~zero;
+            branchCondRes := ~io.zero;
         }
     }
-    val jumpPc = WireInit(cat(pc(30,27), io.instr(25, 0)))
-    when(io.jumpSrc == 1.U){
-        jumpPc := busA
+    val pcBranch = Wire(UInt(30.W))
+    pcBranch := Mux((io.branch & branchCondRes) === 1.U, (pc.asSInt() + signExtend.asSInt() + 1.S).asUInt(), pc + 1.U)
+    
+    val pcJump = WireInit(Cat(pc(29,26), io.instr(25, 0)))
+    when(io.jumpSrc === 1.U){
+        pcJump := io.busA
     }
-    when(branchCondRes && branch){
-        pcNew := pcBranch
-    }
-    when(io.jump){
-        pc := jumpPc
-    }.otherwise{
-        pc := pcNew
+    when(!io.reset.asBool()){
+        when(io.jump === 1.U){
+            pc := pcJump
+        }.otherwise{
+            pc := pcBranch
+        }
     }
 }

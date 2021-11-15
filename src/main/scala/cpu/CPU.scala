@@ -10,6 +10,10 @@ class CPU extends Module {
           val instr = Input(UInt(32.W))
           val pcInit = Input(UInt(32.W))
           val reset = Input(UInt(1.W))
+          val watch = Input(new Bundle{
+              val a = UInt(32.W)
+              val b = UInt(32.W)
+          })
       }
     )
     val reg = Module(new regFile)
@@ -18,7 +22,7 @@ class CPU extends Module {
     val aluUse = Module(new Alu)
     val controlUse = Module(new control)
     controlUse.io.instr := io.instr
-    val regDst = Wire(UInt(1.W))
+    val regDst = Wire(UInt(2.W))
     val exceptionEn = Wire(UInt(1.W))
     val regWr = Wire(UInt(1.W))
     val shifterSRC = Wire(UInt(1.W))

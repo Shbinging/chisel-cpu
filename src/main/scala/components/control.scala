@@ -3,7 +3,7 @@ package components
 import chisel3._
 import chisel3.util._
 
-class control extends Module {
+class controlOri extends Module {
     val io = IO(
       new Bundle {
           val instr = Input(UInt(32.W))
@@ -132,4 +132,41 @@ class control extends Module {
             io.jump := 1.U
         }
     }
+}
+
+
+class control extends Module {
+    val io = IO(
+      new Bundle {
+          val instr = Input(UInt(32.W))
+          val regDst = Output(UInt(2.W))
+          val exceptionEn = Output(UInt(1.W))
+          val regWr = Output(UInt(1.W))
+          val shifterSRC = Output(UInt(1.W))
+          val shifterCtr = Output(UInt(2.W))
+          val extOp = Output(UInt(1.W))
+          val aluSrc = Output(UInt(2.W))
+          val aluCtr = Output(UInt(4.W))
+          val whereToReg = Output(UInt(3.W))
+          val branch = Output(UInt(1.W))
+          val branchCond = Output(UInt(2.W))
+          val jump = Output(UInt(1.W))
+          val jumpSrc = Output(UInt(1.W))
+      }
+    )
+    val cc = Module(new controlOri)
+    cc.io.instr := io.instr
+    io.regDst := cc.io.regDst
+    io.exceptionEn := cc.io.exceptionEn
+    io.regWr := cc.io.regWr
+    io.shifterSRC := cc.io.shifterSRC
+    io.shifterCtr := cc.io.shifterCtr
+    io.extOp := cc.io.extOp
+    io.aluSrc := cc.io.aluSrc
+    io.aluCtr := cc.io.aluCtr
+    io.whereToReg := cc.io.whereToReg
+    io.branch := cc.io.branch
+    io.branchCond := cc.io.branchCond
+    io.jump := cc.io.jump
+    io.jumpSrc := cc.io.jumpSrc
 }

@@ -10,10 +10,12 @@ class CPU extends Module {
           val instr = Input(UInt(32.W))
           val pcInit = Input(UInt(32.W))
           val reset = Input(UInt(1.W))
-          val watch = Input(new Bundle{
-              val a = UInt(32.W)
-              val b = UInt(32.W)
-          })
+          val watch = Output(
+              new Bundle{
+                val regs =  Vec(32, UInt(32.W))
+                val pc = UInt(32.W)
+              }
+            )
       }
     )
     val reg = Module(new regFile)
@@ -128,4 +130,9 @@ class CPU extends Module {
         }
     }
     
+    //to watch
+    for(i <- 0 to 31){
+        io.watch.regs(i) := reg.io.watchReg(i)
+    }
+    io.watch.pc := instrU.io.pcOut
 }

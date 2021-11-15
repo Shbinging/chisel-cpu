@@ -15,7 +15,7 @@ class CPU_test(c: CPU) extends PeekPokeTester(c){
     poke(c.io.pcInit, 1024.U)
     step(1)
     poke(c.io.reset, 0.U)
-    expect(c.io.watch.a ,1024.U)
+    expect(c.io.watch.pc, 1024.U)
 }
 
 object instrFetchUnitGen extends App{

@@ -22,7 +22,9 @@ class instrFetchUnit extends Module{
         }
     )
     //val a = WireInit(io.pcInit)
+    
     val pc = Reg(UInt(30.W))
+    //printf("%d %d %d %d\n", io.instr, io.jumpSrc, io.jump, pc)
     when(io.reset.asBool()){
         pc := io.pcInit
         io.pcOut := io.pcInit

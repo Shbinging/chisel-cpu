@@ -49,7 +49,7 @@ class CPU extends Module {
     instrU.io.reset := io.reset
     instrU.io.branch := controlUse.io.branch
     instrU.io.branchCond := controlUse.io.branchCond
-    instrU.io.busA := reg.io.Rs_out
+    instrU.io.busA := reg.io.Rs_out(31, 2)
     instrU.io.instr := io.instr
     instrU.io.jump := controlUse.io.jump
     instrU.io.jumpSrc := controlUse.io.jumpSrc
@@ -134,5 +134,5 @@ class CPU extends Module {
     for(i <- 0 to 31){
         io.watch.regs(i) := reg.io.watchReg(i)
     }
-    io.watch.pc := instrU.io.pcOut
+    io.watch.pc := Cat(instrU.io.pcOut, Fill(2, 0.U))
 }

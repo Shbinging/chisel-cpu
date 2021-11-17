@@ -83,7 +83,7 @@ class controlOri extends Module {
         io.aluSrc := Mux(op === "b000_001".U, 2.U, 0.U)
         io.branch := 1.U
         when(op === "b000_001".U){
-            when(io.instr(20, 16) === 0.U){
+            when(io.instr(20, 16) === 1.U){
                 io.branchCond := 0.U
             }.otherwise{
                 io.branchCond := 1.U

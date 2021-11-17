@@ -29,7 +29,7 @@ class program extends Module {
     val rom = Mem(256, UInt(32.W))
     cpuUse.io.reset := io.init.cpuReset
     cpuUse.io.pcInit := io.init.pcInit
-    cpuUse.io.instr := rom(cpuUse.io.watch.pc)
+    cpuUse.io.instr := rom(cpuUse.io.watch.pc / 4.U)
 
     when(io.init.writeEn.asBool()) {
         rom(io.init.addr) := io.init.instr

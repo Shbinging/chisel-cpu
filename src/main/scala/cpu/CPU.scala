@@ -45,6 +45,7 @@ class CPU extends Module {
     aluCtr := controlUse.io.aluCtr
     whereToReg := controlUse.io.whereToReg
       //pcUnit
+    instrU.io.halt := controlUse.io.halt
     instrU.io.pcInit := io.pcInit
     instrU.io.reset := io.reset
     instrU.io.branch := controlUse.io.branch

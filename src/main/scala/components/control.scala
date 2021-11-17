@@ -20,6 +20,7 @@ class controlOri extends Module {
           val branchCond = Output(UInt(2.W))
           val jump = Output(UInt(1.W))
           val jumpSrc = Output(UInt(1.W))
+          val halt = Output(UInt(1.W))
       }
     )
     io.regDst := 0.U
@@ -35,9 +36,12 @@ class controlOri extends Module {
     io.branchCond := 0.U
     io.jump := 0.U
     io.jumpSrc := 0.U
+    io.halt := 0.U
     val op = WireInit(io.instr(31, 26))
     val func = WireInit(io.instr(5, 0))
-    when(op === 0.U) { //R type
+    when (op === "b111_111".U){
+        io.halt := 1.U
+    }.elsewhen(op === 0.U) { //R type
         io.regWr := 1.U
         io.regDst := 1.U
         val exceptionEnList = VecInit("b100000".U, "b100010".U)
@@ -152,6 +156,7 @@ class control extends Module {
           val branchCond = Output(UInt(2.W))
           val jump = Output(UInt(1.W))
           val jumpSrc = Output(UInt(1.W))
+          val halt = Output(UInt(1.W))
       }
     )
     val cc = Module(new controlOri)
@@ -169,4 +174,5 @@ class control extends Module {
     io.branchCond := cc.io.branchCond
     io.jump := cc.io.jump
     io.jumpSrc := cc.io.jumpSrc
+    io.halt := cc.io.halt
 }

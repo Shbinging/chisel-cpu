@@ -19,6 +19,7 @@ class instrFetchUnit extends Module{
             val pcOut = Output(UInt(30.W))
             val busA = Input(UInt(30.W))
             val reset = Input(UInt(1.W))
+            val halt = Input(UInt(1.W))
         }
     )
     //val a = WireInit(io.pcInit)
@@ -54,10 +55,12 @@ class instrFetchUnit extends Module{
         pcJump := io.busA
     }
     when(!io.reset.asBool()){
-        when(io.jump === 1.U){
-            pc := pcJump
-        }.otherwise{
-            pc := pcBranch
+        when(io.halt === 0.U){
+            when(io.jump === 1.U){
+                pc := pcJump
+            }.otherwise{
+                pc := pcBranch
+            }
         }
     }
 }

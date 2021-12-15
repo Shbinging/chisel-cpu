@@ -2,14 +2,14 @@
     "version": "1.4.0",
     "project": {
         "name": "root",
-        "directory": "/home/ubuntu/lab4",
-        "workspaceDir": "/home/ubuntu/lab4",
+        "directory": "/home/ubuntu/lab5",
+        "workspaceDir": "/home/ubuntu/lab5",
         "sources": [
-            "/home/ubuntu/lab4/src/main/scala",
-            "/home/ubuntu/lab4/src/main/scala-2.12",
-            "/home/ubuntu/lab4/src/main/scala-2",
-            "/home/ubuntu/lab4/src/main/java",
-            "/home/ubuntu/lab4/target/scala-2.12/src_managed/main"
+            "/home/ubuntu/lab5/src/main/scala",
+            "/home/ubuntu/lab5/src/main/scala-2.12",
+            "/home/ubuntu/lab5/src/main/scala-2",
+            "/home/ubuntu/lab5/src/main/java",
+            "/home/ubuntu/lab5/target/scala-2.12/src_managed/main"
         ],
         "dependencies": [
             
@@ -49,11 +49,11 @@
             "/home/ubuntu/.cache/coursier/v1/https/repo1.maven.org/maven2/org/json4s/json4s-scalap_2.12/3.6.9/json4s-scalap_2.12-3.6.9.jar",
             "/home/ubuntu/.cache/coursier/v1/https/repo1.maven.org/maven2/com/thoughtworks/paranamer/paranamer/2.8/paranamer-2.8.jar"
         ],
-        "out": "/home/ubuntu/lab4/.bloop/root",
-        "classesDir": "/home/ubuntu/lab4/.bloop/root/scala-2.12/classes",
+        "out": "/home/ubuntu/lab5/.bloop/root",
+        "classesDir": "/home/ubuntu/lab5/.bloop/root/scala-2.12/classes",
         "resources": [
-            "/home/ubuntu/lab4/src/main/resources",
-            "/home/ubuntu/lab4/target/scala-2.12/resource_managed/main"
+            "/home/ubuntu/lab5/src/main/resources",
+            "/home/ubuntu/lab5/target/scala-2.12/resource_managed/main"
         ],
         "scala": {
             "organization": "org.scala-lang",
@@ -77,7 +77,7 @@
                 "/home/ubuntu/.cache/coursier/v1/https/repo1.maven.org/maven2/jline/jline/2.14.6/jline-2.14.6.jar",
                 "/home/ubuntu/.cache/coursier/v1/https/repo1.maven.org/maven2/org/fusesource/jansi/jansi/1.12/jansi-1.12.jar"
             ],
-            "analysis": "/home/ubuntu/lab4/target/streams/compile/bloopAnalysisOut/_global/streams/inc_compile_2.12.zip",
+            "analysis": "/home/ubuntu/lab5/target/streams/compile/bloopAnalysisOut/_global/streams/inc_compile_2.12.zip",
             "setup": {
                 "order": "mixed",
                 "addLibraryToBootClasspath": true,
@@ -136,7 +136,7 @@
             "config": {
                 "home": "/usr/lib/jvm/java-11-openjdk-amd64",
                 "options": [
-                    "-Duser.dir=/home/ubuntu/lab4"
+                    "-Duser.dir=/home/ubuntu/lab5"
                 ]
             },
             "mainClass": [

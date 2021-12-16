@@ -58,10 +58,10 @@ class memDataBundle extends Bundle{
 }
 
 class AIF extends Module{
-    val io = new Bundle{
+    val io = IO(new Bundle{
         val in = Input(new ifDataBundle)
         val out = Output(new ifDataBundle)
-    }
+    })
     io.out.instr := RegNext(io.in.instr)
     io.out.nPc := RegNext(io.in.nPc)
 }

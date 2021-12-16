@@ -16,7 +16,7 @@ class mem extends Module{
     )
 
     val memUse = Mem(256, UInt(8.W))
-    io.memOut := DontCare
+    io.memOut := 0.U
     when(io.memRead === 1.U){
         io.memOut := VecInit(memUse(io.memAddress + 3.U), memUse(io.memAddress + 2.U), memUse(io.memAddress + 1.U), memUse(io.memAddress)).asUInt()
     }

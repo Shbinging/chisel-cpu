@@ -14,16 +14,21 @@ class cpu extends Module{
             val watch = new Bundle{
                 val regs =  Output(Vec(32, UInt(32.W)))
                 val pc = Output(UInt(32.W))
-                val data = Output(Vec(256, UInt(8.W)))
+                val data = Output(Vec(64, UInt(32.W)))
             }
         }
     )
 
+    val pc = Reg(UInt(32.W))
     //init
     val instrMem = Module(new mem)
+    instrMem.io.memRead := 0.U
+    instrMem.io.memWrite := 0.U
+    instrMem.io.memData := 0.U
     when(io.init.reset === 1.U){
         pc := 0.U
         instrMem.io.memWrite := 1.U
+        instrMem.io.memRead := 0.U
         for(i <- 0 to 255){
             instrMem.io.memAddress := i.asUInt()
             instrMem.io.memData := io.init.copyData(i)
@@ -38,12 +43,12 @@ class cpu extends Module{
     val BAJ = Wire(UInt(32.W))
     val whereToPc = Wire(UInt(1.W))
     
-    val pc = RegInit(0.U(32.W))
+    
     pc := Mux(whereToPc === 1.U, BAJ, pc + 4.U)
     instrMem.io.memAddress := pc
 
     val interAIF = Module(new AIF)
-    interAIF.io.in.instr := instrMem.io.memData
+    interAIF.io.in.instr := instrMem.io.memOut
     interAIF.io.in.nPc := pc + 4.U
 //ID
 //TODO::
@@ -152,7 +157,7 @@ class cpu extends Module{
     dataMem.io.memWrite := interAEXEC.io.out.ctr.mem.memWrite
 
     val interAMEM = Module(new AMEM)
-    interAMEM.io.in.ctr.wb <> interAEXEC.io.in.ctr.wb
+    interAMEM.io.in.ctr.wb <> interAEXEC.io.out.ctr.wb
     interAMEM.io.in.ctr.flush := flush
     interAMEM.io.in.data.aluOut := interAEXEC.io.out.data.aluOut
     interAMEM.io.in.data.regDst := interAEXEC.io.out.data.regDst
@@ -176,4 +181,13 @@ class cpu extends Module{
     forwardingB := fwd.io.forwardingB
     c1 := interAEXEC.io.out.data.aluOut
     c2 := rwData
+
+    //watch
+    io.watch.pc := pc
+    for(i <- 0 to 31){
+        io.watch.regs(i) := regs.io.watchReg(i)
+    }
+    for(i <- 0 to 63){
+        io.watch.data(i) := dataMem.io.memWatch(i)
+    }
 }

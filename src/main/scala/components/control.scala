@@ -112,7 +112,7 @@ class control extends Module {
           ).contains(op)
         ) {
             io.out.exec.aluSrcB := 1.U
-            when(VecInit("b1000".U, "b1010".U, "b1011".U).contains(op)){
+            when(VecInit("b1000".U, "b1010".U, "b1011".U).contains(op)) {
                 io.out.exec.signExt := 1.U
             }
             io.out.wb.memToReg := 1.U

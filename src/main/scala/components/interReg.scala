@@ -37,6 +37,7 @@ class idDataBundle extends Bundle{
     val imm = UInt(16.W)
     val Rt = UInt(5.W)
     val Rd = UInt(5.W)
+    val instrTarget = UInt(26.W)
 }
 
 class execDataBundle extends Bundle{
@@ -47,13 +48,13 @@ class execDataBundle extends Bundle{
     val less = UInt(1.W)
     val aluOut = UInt(32.W)
     val rbOut = UInt(32.W)
-    val regDst = UInt(32.W)
+    val regDst = UInt(5.W)
 }
 
 class memDataBundle extends Bundle{
     val readData = UInt(32.W)
     val aluOut = UInt(32.W)
-    val regDst = UInt(32.W)
+    val regDst = UInt(5.W)
 }
 
 class AIF extends Module{

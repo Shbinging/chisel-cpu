@@ -9,18 +9,6 @@ import scala.collection._
 import org.scalatest.FreeSpec
 import chisel3.iotesters.{PeekPokeTester, Driver, ChiselFlatSpec}
 import chiseltest.testableRecord
-class regFileTest extends FreeSpec with ChiselScalatestTester {
-    "Test regFile" in {
-    test(new regFile3){ c =>
-        c.io.Rs_addr.poke(1.U)
-        c.io.Rd_addr.poke(1.U)
-        c.io.Rd_byte_w_en.poke(15.U)
-        c.io.Rd_in.poke(3.U)
-        c.clock.step(1)
-        c.io.Rs_out.expect(3.U)
-    }
-}
-}
 
 class regTests(c: regFile) extends PeekPokeTester(c) {  
         def testInitValue={
@@ -45,7 +33,6 @@ class regTests(c: regFile) extends PeekPokeTester(c) {
         def testWrite(addr:UInt, mask:UInt, wriVal:UInt) ={
             poke(c.io.Rd_addr, addr)
             poke(c.io.Rd_in, wriVal)
-            poke(c.io.Rd_byte_w_en, mask)
             step(1)
         }
 

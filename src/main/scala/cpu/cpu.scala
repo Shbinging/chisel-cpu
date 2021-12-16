@@ -73,4 +73,39 @@ class cpu extends Module{
     interAID.io.in.data.rbOut := regs.io.Rt_out
     interAID.io.in.data.raOut := regs.io.Rs_out
     interAID.io.in.data.nPc := interAIF.io.out.nPc
+    interAID.io.in.data.instrTarget := interAIF.io.out.instr(25, 0)
+
+//EXEC
+//TODO::
+    val forwardingA = Wire(UInt(2.W))
+    val forwardingB = Wire(UInt(2.W))
+    val c1 = Wire(UInt(32.W))
+    val c2 = Wire(UInt(32.W))
+
+
+    val raOut = Wire(UInt(32.W))
+    val rbOut = Wire(UInt(32.W))
+    val imm32 = Wire(UInt(32.W))
+    raOut := MuxLookup(forwardingA, 0.U, Array(0.U->interAID.io.out.data.raOut, 1.U -> c1, 2.U -> c2))
+    rbOut := MuxLookup(forwardingB, 0.U, Array(0.U->interAID.io.out.data.rbOut, 1.U -> c1, 2.U -> c2))
+    imm32 := Mux(interAID.io.out.ctr.exec.signExt === 0.U, Cat(Fill(16, 0.U), interAID.io.out.data.imm), Cat(Fill((16), interAID.io.out.data.imm(15)), interAID.io.out.data.imm))
+
+    val aluSrcA = Wire(UInt(32.W))
+    val aluSrcB = Wire(UInt(32.W))
+    aluSrcA := MuxLookup(interAID.io.out.ctr.exec.aluSrcA, 0.U, Array(0.U->raOut, 1.U->16.U, 2.U->4.U, 3.U->interAID.io.out.data.imm(5, 0)))
+    aluSrcB := MuxLookup(interAID.io.out.ctr.exec.aluSrcB, 0.U, Array(0.U->rbOut, 1.U->imm32, 2.U->interAID.io.out.data.nPc))
+
+    val aluUse = Module(new AluNew)
+    aluUse.io.A_in := aluSrcA
+    aluUse.io.B_in := aluSrcB
+    aluUse.io.ALU_op := interAID.io.out.ctr.exec.aluOp
+    
+    val interAEXEC = Module(new AEXEC)
+    val NPCJ = Wire(UInt(32.W))
+    val NPCB = Wire(UInt(32.W))
+    NPCJ := Mux(interAID.io.out.ctr.exec.whereToJump === 0.U, raOut, Cat(interAID.io.out.data.nPc(31, 28), interAID.io.out.data.instrTarget, 0.U(2.W)))
+    NPCB := (interAID.io.out.data.nPc.asSInt() + imm32.asSInt()).asUInt()
+
+    val regDst = Wire(UInt(5.W))
+    regDst := MuxLookup(interAID.io.out.ctr.exec.RegDst, 0.U, Array(0.U->interAID.io.out.data.Rt, 1.U->interAID.io.out.data.Rd, 2.U->31.U))
 }

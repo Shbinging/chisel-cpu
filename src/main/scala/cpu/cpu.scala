@@ -108,4 +108,72 @@ class cpu extends Module{
 
     val regDst = Wire(UInt(5.W))
     regDst := MuxLookup(interAID.io.out.ctr.exec.RegDst, 0.U, Array(0.U->interAID.io.out.data.Rt, 1.U->interAID.io.out.data.Rd, 2.U->31.U))
+
+    interAEXEC.io.in.data.aluOut := aluUse.io.ALU_out
+    interAEXEC.io.in.data.less := aluUse.io.Less
+    interAEXEC.io.in.data.overflow := aluUse.io.Overflow_out
+    interAEXEC.io.in.data.zero := aluUse.io.Zero
+    interAEXEC.io.in.data.rbOut := rbOut
+    interAEXEC.io.in.data.regDst := regDst
+    interAEXEC.io.in.data.nPcB := NPCB
+    interAEXEC.io.in.data.nPcJ := NPCJ
+    interAEXEC.io.in.ctr.flush := flush
+    interAEXEC.io.in.ctr.mem <> interAID.io.out.ctr.mem
+    interAEXEC.io.in.ctr.wb <> interAID.io.out.ctr.wb
+
+//MEM
+
+    val needBranch = WireInit(0.U(1.W))
+    when (interAEXEC.io.out.ctr.mem.branch === 1.U){
+        switch(interAEXEC.io.out.ctr.mem.branchCond){
+            is(0.U){
+                needBranch := ~interAEXEC.io.out.data.less
+            }
+            is(1.U){
+                needBranch := interAEXEC.io.out.data.less
+            }
+            is(2.U){
+                needBranch := interAEXEC.io.out.data.zero
+            }
+            is(3.U){
+                needBranch := ~interAEXEC.io.out.data.zero
+            }
+        }
+    }
+
+    flush := needBranch
+    BAJ := Mux(needBranch === 1.U, interAEXEC.io.out.data.nPcB, interAEXEC.io.out.data.nPcJ)
+    whereToPc := needBranch | interAEXEC.io.out.ctr.mem.jump
+
+    val dataMem = Module(new mem)
+    dataMem.io.memAddress := interAEXEC.io.out.data.aluOut
+    dataMem.io.memData := interAEXEC.io.out.data.rbOut
+    dataMem.io.memRead := interAEXEC.io.out.ctr.mem.memRead
+    dataMem.io.memWrite := interAEXEC.io.out.ctr.mem.memWrite
+
+    val interAMEM = Module(new AMEM)
+    interAMEM.io.in.ctr.wb <> interAEXEC.io.in.ctr.wb
+    interAMEM.io.in.ctr.flush := flush
+    interAMEM.io.in.data.aluOut := interAEXEC.io.out.data.aluOut
+    interAMEM.io.in.data.regDst := interAEXEC.io.out.data.regDst
+    interAMEM.io.in.data.readData := dataMem.io.memOut
+
+//WB
+    rwAddr := interAMEM.io.in.data.regDst
+    rwData := Mux(interAMEM.io.out.ctr.wb.memToReg === 0.U, interAMEM.io.out.data.readData, interAMEM.io.out.data.aluOut)
+    rwEn := interAMEM.io.out.ctr.wb.wrEn
+
+//forwarding
+
+    val fwd = Module(new forwarding)
+    fwd.io.execRegDst := interAEXEC.io.out.data.regDst
+    fwd.io.execwrEn := interAEXEC.io.out.ctr.wb.wrEn
+    fwd.io.memRegDst := rwAddr
+    fwd.io.memwrEn := rwEn
+    fwd.io.idRaOut := interAID.io.out.data.raOut
+    fwd.io.idRbOut := interAID.io.out.data.rbOut
+    forwardingA := fwd.io.forwardingA
+    forwardingB := fwd.io.forwardingB
+    c1 := interAEXEC.io.out.data.aluOut
+    c2 := rwData
 }

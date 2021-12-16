@@ -14,20 +14,13 @@ class control extends Module {
           }
       }
     )
-    val op = UInt(6.W)
-    val rs = UInt(5.W)
-    val rt = UInt(5.W)
-    val rd = UInt(5.W)
-    val func = UInt(6.W)
-    val shamt = UInt(5.W)
-    val imm = UInt(16.W)
-    op := io.instr(31, 26)
-    rs := io.instr(25, 21)
-    rt := io.instr(20, 16)
-    rd := io.instr(15, 11)
-    shamt := io.instr(10, 6)
-    func := io.instr(5, 0)
-    imm := io.instr(15, 0)
+    val op = WireInit(io.instr(31, 26))
+    val rs = WireInit(io.instr(25, 21))
+    val rt = WireInit(io.instr(20, 16))
+    val rd = WireInit(io.instr(15, 11))
+    val func = WireInit(io.instr(5, 0))
+    val shamt = WireInit(io.instr(10, 6))
+    val imm = WireInit(io.instr(15, 0))
 
     io.out.exec.RegDst := 0.U
     io.out.exec.aluOp := 0.U
@@ -51,7 +44,7 @@ class control extends Module {
             io.out.exec.RegDst := 1.U
             io.out.wb.memToReg := 1.U
             io.out.wb.wrEn := 1.U
-            val aluOp = Vec(4, UInt(1.W))
+            val aluOp = Wire(Vec(4, UInt(1.W)))
             /*
             a 5
             b 4
@@ -135,7 +128,7 @@ class control extends Module {
             ~b~c + d
             c
              */
-            val aluOp = Vec(4, UInt(1.W))
+            val aluOp = Wire(Vec(4, UInt(1.W)))
             aluOp(3) := (~op(2) & ~op(1)) | (op(2) & op(1))
             aluOp(2) := (~op(2) | ~op(1))
             aluOp(1) := (~op(2) & ~op(1)) | op(0)

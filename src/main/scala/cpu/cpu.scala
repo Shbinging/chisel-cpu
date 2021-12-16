@@ -97,8 +97,8 @@ class cpu extends Module{
 
     val aluSrcA = Wire(UInt(32.W))
     val aluSrcB = Wire(UInt(32.W))
-    aluSrcA := MuxLookup(interAID.io.out.ctr.exec.aluSrcA, 0.U, Array(0.U->raOut, 1.U->16.U, 2.U->4.U, 3.U->interAID.io.out.data.imm(5, 0)))
-    aluSrcB := MuxLookup(interAID.io.out.ctr.exec.aluSrcB, 0.U, Array(0.U->rbOut, 1.U->imm32, 2.U->interAID.io.out.data.nPc))
+    aluSrcA := MuxLookup(interAID.io.out.ctr.exec.aluSrcA, 0.U, Array(0.U->raOut, 1.U->16.U, 2.U->4.U, 3.U->interAID.io.out.data.imm(10, 6)))
+    aluSrcB := MuxLookup(interAID.io.out.ctr.exec.aluSrcB, 0.U, Array(0.U->rbOut, 1.U->imm32, 2.U->interAID.io.out.data.nPc, 3.U->0.U))
 
     val aluUse = Module(new AluNew)
     aluUse.io.A_in := aluSrcA

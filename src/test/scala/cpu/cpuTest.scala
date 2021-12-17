@@ -12,9 +12,20 @@ import chisel3.iotesters.{PeekPokeTester, Driver, ChiselFlatSpec}
 
 class CPU_test(c: cpu) extends PeekPokeTester(c){
     poke(c.io.init.reset, 1.U)
-    for(i <- 0 to 255){
-        poke(c.io.init.copyData(i), 0.U)
+    var instrUse = Array(536936458L.U)
+    for(i <- 0 to 63){
+        poke(c.io.init.writeAddr, (i * 4).asUInt());
+        if (i < instrUse.length){
+            poke(c.io.init.copyData, instrUse(i));
+        }else{
+            poke(c.io.init.copyData, 0xffffffffL.U)
+        }
+        step(1)
     }
+    step(1)
+    poke(c.io.init.reset, 0.U)
+    step(6)
+    print(peek(c.io.watch.regs(1)).toString()+"\n")
 }
 
 object cpuGen extends App{

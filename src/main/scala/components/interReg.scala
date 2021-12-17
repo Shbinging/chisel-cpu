@@ -108,6 +108,7 @@ class AID extends Module{
     io.out.ctr.exec <> RegNext(exec)
     io.out.ctr.mem <> RegNext(mem)
     io.out.ctr.wb <> RegNext(wb)
+    // printf("flush-rwEn %d %d %d\n", io.in.ctr.flush, wb.wrEn, io.out.ctr.wb.wrEn)
 }
 
 class AEXEC extends Module{

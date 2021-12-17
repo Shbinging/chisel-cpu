@@ -55,5 +55,8 @@ class regFile extends Module {
             }
         }
     }
+    for(i <- 0 to 31){
+        io.watchReg(i) := regs(i).asUInt()
+    }
 }
 

@@ -11,8 +11,10 @@ import chisel3.iotesters.{PeekPokeTester, Driver, ChiselFlatSpec}
 
 
 class control_test(c: control) extends PeekPokeTester(c){
- 
-
+    poke(c.io.instr, 0xffffffffL.U)
+    print(peek(c.io.out.exec))
+    print(peek(c.io.out.mem))
+    print(peek(c.io.out.wb))
 }
 
 class forwarding_test(c: forwarding) extends PeekPokeTester(c){

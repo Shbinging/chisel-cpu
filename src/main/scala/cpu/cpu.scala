@@ -9,53 +9,49 @@ class cpu extends Module{
         new Bundle{
             val init = new Bundle{
                 val reset = Input(UInt(1.W))
-                val copyData = Input(Vec(256, UInt(8.W)))
+                val copyData = Input(UInt(32.W))
+                val writeAddr = Input(UInt(32.W))
             }
             val watch = new Bundle{
                 val regs =  Output(Vec(32, UInt(32.W)))
                 val pc = Output(UInt(32.W))
                 val data = Output(Vec(64, UInt(32.W)))
+                val instr = Output(Vec(64, UInt(32.W)))
             }
         }
     )
 
-    val pc = Reg(UInt(32.W))
-    //init
-    val instrMem = Module(new mem)
-    instrMem.io.memRead := 0.U
-    instrMem.io.memWrite := 0.U
-    instrMem.io.memData := 0.U
-    when(io.init.reset === 1.U){
-        pc := 0.U
-        instrMem.io.memWrite := 1.U
-        instrMem.io.memRead := 0.U
-        for(i <- 0 to 255){
-            instrMem.io.memAddress := i.asUInt()
-            instrMem.io.memData := io.init.copyData(i)
-        }
-    }
-    when(io.init.reset === 0.U){
-        instrMem.io.memWrite := 0.U
-        instrMem.io.memRead := 1.U
-    }
+
 //IF
 //TODO::
-    val BAJ = Wire(UInt(32.W))
+    val pc = Reg(UInt(32.W))
+    val flush = WireInit(0.U(1.W))
     val whereToPc = Wire(UInt(1.W))
-    
-    
+    val BAJ = Wire(UInt(32.W))
+    val instrMem = Module(new mem)
+    instrMem.io.memRead := 1.U
+    instrMem.io.memWrite := 0.U
+    instrMem.io.memData := 0.U
     pc := Mux(whereToPc === 1.U, BAJ, pc + 4.U)
     instrMem.io.memAddress := pc
+    whereToPc := 0.U
+    flush := 0.U
+
 
     val interAIF = Module(new AIF)
     interAIF.io.in.instr := instrMem.io.memOut
     interAIF.io.in.nPc := pc + 4.U
+    when(io.init.reset === 0.U){
+        printf("pc:%d\n", pc)
+        printf("======IF========\n")
+        printf(p"${interAIF.io.in}\n")
+    }
 //ID
 //TODO::
     val rwEn = Wire(UInt(1.W))
     val rwData = Wire(UInt(32.W))
     val rwAddr = Wire(UInt(32.W))
-    val flush = WireInit(0.U(1.W))
+
 
     val regs = Module(new regFile)
     regs.io.Rs_addr := interAIF.io.out.instr(25, 21)
@@ -66,7 +62,7 @@ class cpu extends Module{
 
     val ctr = Module(new control)
     ctr.io.instr := interAIF.io.out.instr
-
+    
     val interAID = Module(new AID)
     interAID.io.in.ctr.exec <> ctr.io.out.exec
     interAID.io.in.ctr.mem <> ctr.io.out.mem
@@ -79,7 +75,14 @@ class cpu extends Module{
     interAID.io.in.data.raOut := regs.io.Rs_out
     interAID.io.in.data.nPc := interAIF.io.out.nPc
     interAID.io.in.data.instrTarget := interAIF.io.out.instr(25, 0)
-
+    when(io.init.reset === 0.U){
+        printf("")
+        printf("======ID========\n")
+        printf(p"${interAID.io.in.data}\n")
+        printf(p"${interAID.io.in.ctr.exec}\n")
+        printf(p"${interAID.io.in.ctr.mem}\n")
+        printf(p"${interAID.io.in.ctr.wb}\n")
+    }
 //EXEC
 //TODO::
     val forwardingA = Wire(UInt(2.W))
@@ -126,6 +129,12 @@ class cpu extends Module{
     interAEXEC.io.in.ctr.mem <> interAID.io.out.ctr.mem
     interAEXEC.io.in.ctr.wb <> interAID.io.out.ctr.wb
 
+    when(io.init.reset === 0.U){
+        printf("======EXEC========\n")
+        printf(p"${interAEXEC.io.in.data}\n")
+        printf(p"${interAEXEC.io.in.ctr.mem}\n")
+        printf(p"${interAEXEC.io.in.ctr.wb}\n")
+    }
 //MEM
 
     val needBranch = WireInit(0.U(1.W))
@@ -163,10 +172,25 @@ class cpu extends Module{
     interAMEM.io.in.data.regDst := interAEXEC.io.out.data.regDst
     interAMEM.io.in.data.readData := dataMem.io.memOut
 
+    when(io.init.reset === 0.U){
+        printf("======MEM========\n")
+        printf(p"${interAMEM.io.in.data}\n")
+        printf(p"${interAMEM.io.in.ctr.wb}\n")
+    }
+
 //WB
-    rwAddr := interAMEM.io.in.data.regDst
+    rwAddr := interAMEM.io.out.data.regDst
     rwData := Mux(interAMEM.io.out.ctr.wb.memToReg === 0.U, interAMEM.io.out.data.readData, interAMEM.io.out.data.aluOut)
     rwEn := interAMEM.io.out.ctr.wb.wrEn
+
+    when(io.init.reset === 0.U){
+        printf("======WB========\n")
+        printf(p"rwAddr ${rwAddr}\n")
+        printf(p"rwData ${rwData}\n")
+        printf(p"rwEn ${rwEn}\n")
+        printf(p"flush ${flush}\n")
+        printf("==============\n\n")
+    }
 
 //forwarding
 
@@ -189,5 +213,15 @@ class cpu extends Module{
     }
     for(i <- 0 to 63){
         io.watch.data(i) := dataMem.io.memWatch(i)
+        io.watch.instr(i) := instrMem.io.memWatch(i)
+    }
+
+    when(io.init.reset === 1.U){
+        pc := 0.U
+        instrMem.io.memWrite := 1.U
+        instrMem.io.memRead := 0.U
+        instrMem.io.memAddress := io.init.writeAddr
+        instrMem.io.memData := io.init.copyData
+        flush := 1.U
     }
 }

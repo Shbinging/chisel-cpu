@@ -179,6 +179,8 @@ class control extends Module {
             }
         }
     }
+    // printf("op %d\n", op)
+    // printf("rwEn %d\n", io.out.wb.wrEn)
 }
 
 class forwarding extends Module {

@@ -43,7 +43,7 @@ class cpu extends Module {
     flush := 0.U
 
     val interAIF = Module(new AIF)
-    interAIF.io.in.instr := instrMem.io.memOut
+    interAIF.io.in.instr := Mux(flush === 0.U, instrMem.io.memOut, 0.U)
     interAIF.io.in.nPc := pc + 4.U
     when(io.init.reset === 0.U) {
         printf("clock%d\n", roundReg + 1.U)
@@ -154,7 +154,7 @@ class cpu extends Module {
         0.U(2.W)
       )
     )
-    NPCB := (interAID.io.out.data.nPc.asSInt() + imm32.asSInt()).asUInt()
+    NPCB := (interAID.io.out.data.nPc.asSInt() + imm32.asSInt() << 2).asUInt()
 
     val regDst = Wire(UInt(5.W))
     regDst := MuxLookup(

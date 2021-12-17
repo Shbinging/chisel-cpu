@@ -35,6 +35,7 @@ class idDataBundle extends Bundle{
     val raOut = UInt(32.W)
     val rbOut = UInt(32.W)
     val imm = UInt(16.W)
+    val Rs = UInt(5.W)
     val Rt = UInt(5.W)
     val Rd = UInt(5.W)
     val instrTarget = UInt(26.W)

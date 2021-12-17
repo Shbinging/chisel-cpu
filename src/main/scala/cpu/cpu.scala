@@ -68,6 +68,7 @@ class cpu extends Module{
     interAID.io.in.ctr.mem <> ctr.io.out.mem
     interAID.io.in.ctr.wb <> ctr.io.out.wb
     interAID.io.in.ctr.flush := flush
+    interAID.io.in.data.Rs := interAIF.io.out.instr(25, 21)
     interAID.io.in.data.Rd := interAIF.io.out.instr(15, 11)
     interAID.io.in.data.Rt := interAIF.io.out.instr(20, 16)
     interAID.io.in.data.imm := interAIF.io.out.instr(15, 0)
@@ -188,23 +189,25 @@ class cpu extends Module{
         printf(p"rwAddr ${rwAddr}\n")
         printf(p"rwData ${rwData}\n")
         printf(p"rwEn ${rwEn}\n")
-        printf(p"flush ${flush}\n")
-        printf("==============\n\n")
     }
 
 //forwarding
 
+    printf("======forward======\n")
     val fwd = Module(new forwarding)
     fwd.io.execRegDst := interAEXEC.io.out.data.regDst
     fwd.io.execwrEn := interAEXEC.io.out.ctr.wb.wrEn
     fwd.io.memRegDst := rwAddr
     fwd.io.memwrEn := rwEn
-    fwd.io.idRaOut := interAID.io.out.data.raOut
-    fwd.io.idRbOut := interAID.io.out.data.rbOut
+    fwd.io.idRaOut := interAID.io.out.data.Rs
+    fwd.io.idRbOut := interAID.io.out.data.Rt
     forwardingA := fwd.io.forwardingA
     forwardingB := fwd.io.forwardingB
     c1 := interAEXEC.io.out.data.aluOut
     c2 := rwData
+    printf(p"flush ${flush}\n")
+    printf(p"${fwd.io}\n")
+    printf("==============\n\n")
 
     //watch
     io.watch.pc := pc

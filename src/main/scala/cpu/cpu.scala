@@ -221,7 +221,7 @@ class cpu extends Module {
 
     val interAMEM = Module(new AMEM)
     interAMEM.io.in.ctr.wb <> interAEXEC.io.out.ctr.wb
-    interAMEM.io.in.ctr.flush := flush
+    interAMEM.io.in.ctr.flush := 0.U
     interAMEM.io.in.data.aluOut := interAEXEC.io.out.data.aluOut
     interAMEM.io.in.data.regDst := interAEXEC.io.out.data.regDst
     interAMEM.io.in.data.readData := dataMem.io.memOut

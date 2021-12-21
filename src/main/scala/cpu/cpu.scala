@@ -55,7 +55,7 @@ class cpu extends Module {
 //TODO::
     val rwEn = Wire(UInt(1.W))
     val rwData = Wire(UInt(32.W))
-    val rwAddr = Wire(UInt(32.W))
+    val rwAddr = Wire(UInt(5.W))
 
     val regs = Module(new regFile)
     regs.io.Rs_addr := interAIF.io.out.instr(25, 21)
@@ -122,7 +122,7 @@ class cpu extends Module {
       Array(
         0.U -> raOut,
         1.U -> 16.U,
-        2.U -> 4.U,
+        2.U -> 0.U,
         3.U -> interAID.io.out.data.imm(10, 6)
       )
     )
@@ -205,7 +205,7 @@ class cpu extends Module {
         }
     }
 
-    flush := needBranch
+    flush := whereToPc
     BAJ := Mux(
       needBranch === 1.U,
       interAEXEC.io.out.data.nPcB,

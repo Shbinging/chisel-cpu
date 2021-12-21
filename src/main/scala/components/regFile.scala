@@ -48,12 +48,23 @@ class regFile extends Module {
     //io.Rt_out := Cat(Seq(regs(io.Rt_addr)(3), regs(io.Rt_addr)(2), regs(io.Rt_addr)(1), regs(io.Rt_addr)(0)))
     io.Rs_out := regs(io.Rs_addr).asUInt()
     io.Rt_out := regs(io.Rt_addr).asUInt()
+    // when(io.Rd_en.asBool()){
+    //     printf(p"${io.Rd_addr}")
+    // }
     when(io.Rd_addr =/= 0.U) {
         for (i <- 0 to 3) {
             when(io.Rd_en.asBool()) {
                 regs(io.Rd_addr)(i) := io.Rd_in((i + 1) * 8 - 1, i * 8)
             }
         }
+    }
+    io.Rs_out := regs(io.Rs_addr).asUInt()
+    io.Rt_out := regs(io.Rt_addr).asUInt()
+    when(io.Rd_en.asBool() & io.Rs_addr === io.Rd_addr){
+        io.Rs_out := io.Rd_in
+    }
+    when(io.Rd_en.asBool() & io.Rt_addr === io.Rd_addr){
+        io.Rt_out := io.Rd_in
     }
     for(i <- 0 to 31){
         io.watchReg(i) := regs(i).asUInt()

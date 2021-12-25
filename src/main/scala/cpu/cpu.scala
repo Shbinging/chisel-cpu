@@ -89,6 +89,7 @@ class cpu extends Module {
         printf(p"${interAID.io.in.ctr.exec}\n")
         printf(p"${interAID.io.in.ctr.mem}\n")
         printf(p"${interAID.io.in.ctr.wb}\n")
+        printf(p"${interAID.io.in.ctr.exp}\n")
     }
 //EXEC
 //TODO::
@@ -196,6 +197,7 @@ class cpu extends Module {
     }
     when(io.init.reset === 0.U) {
         printf("======EXEC========\n")
+        printf(p"${aluUse.io}\n")
         printf(p"${interAEXEC.io.in.data}\n")
         printf(p"${interAEXEC.io.in.ctr.mem}\n")
         printf(p"${interAEXEC.io.in.ctr.wb}\n")

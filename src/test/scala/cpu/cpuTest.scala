@@ -12,7 +12,7 @@ import chisel3.iotesters.{PeekPokeTester, Driver, ChiselFlatSpec}
 
 class CPU_test(c: cpu) extends PeekPokeTester(c){
     poke(c.io.init.reset, 1.U)
-    var instrUse = Array(536936458L.U,2887843850L.U,2349006868L.U,543424522L.U)
+    var instrUse = Array(1006731264L.U,539131904L.U)
     for(i <- 0 to 63){
         poke(c.io.init.writeAddr, (i * 4).asUInt());
         if (i < instrUse.length){

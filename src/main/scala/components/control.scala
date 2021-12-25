@@ -11,6 +11,7 @@ class control extends Module {
               val exec = Output(new execCtrBundle)
               val mem = Output(new memCtrBundle)
               val wb = Output(new wbCtrBundle)
+              val exp = Output(new expCtrBundle)
           }
       }
     )
@@ -35,7 +36,8 @@ class control extends Module {
     io.out.mem.jump := 0.U
     io.out.wb.memToReg := 0.U
     io.out.wb.wrEn := 0.U
-
+    io.out.exp.canOverFlow := 0.U
+    io.out.exp.load := 0.U
     when(op === 0.U) {
         when(func =/= "b1001".U) {
             when(VecInit("b0".U, "b10".U, "b11".U).contains(func)) {
@@ -181,6 +183,15 @@ class control extends Module {
     }
     // printf("op %d\n", op)
     // printf("rwEn %d\n", io.out.wb.wrEn)
+    when(op === 0.U && VecInit("b100000".U, "b100010".U).contains(func)){
+        io.out.exp.canOverFlow := 1.U
+    }
+    when(op === "b001000".U){
+        io.out.exp.canOverFlow := 1.U
+    }
+    when(op === "b100011".U){
+        io.out.exp.load := 1.U
+    }
 }
 
 class forwarding extends Module {
@@ -217,5 +228,37 @@ class forwarding extends Module {
       io.execwrEn.asBool() && io.execRegDst === io.idRbOut && io.idRbOut =/= 0.U
     ) {
         io.forwardingB := 1.U
+    }
+}
+
+class loadStall extends Module{
+    val io = IO(
+        new Bundle{
+            val regDst = Input(UInt(5.W))
+            val isLoad = Input(UInt(1.W))
+            val instr = Input(UInt(32.W))
+            val keep = Output(UInt(1.W))
+            val aidFlush = Output(UInt(1.W))
+            val pcEn = Output(UInt(1.W))
+        }
+    )
+    io.keep := 0.U
+    io.aidFlush := 0.U
+    io.pcEn := 1.U
+    when(io.isLoad === 1.U){
+    when(io.instr(31, 26) =/= "b11".U){
+        when(io.instr =/= 0xffffffffL.U){
+        when(io.instr(25, 21) === io.regDst && io.regDst =/= 0.U){
+            io.keep := 1.U
+            io.aidFlush := 1.U
+            io.pcEn := 0.U
+        }
+        when(io.instr(31, 26) === 0.U && io.instr(20, 16) === io.regDst && io.regDst =/= 0.U){
+            io.keep := 1.U
+            io.aidFlush := 1.U
+            io.pcEn := 0.U
+        }
+    }
+    }
     }
 }

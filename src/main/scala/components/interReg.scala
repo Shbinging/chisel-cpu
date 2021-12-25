@@ -3,6 +3,11 @@ package components
 import chisel3._
 import chisel3.util._
 
+class expCtrBundle extends Bundle{
+    val load = UInt(1.W)
+    val canOverFlow = UInt(1.W)
+}
+
 class execCtrBundle extends Bundle{
     val aluSrcA = UInt(3.W)
     val aluSrcB = UInt(3.W)
@@ -26,6 +31,7 @@ class wbCtrBundle extends Bundle{
 } 
 
 class ifDataBundle extends Bundle{
+    val keep = UInt(1.W)
     val nPc = UInt(32.W)
     val instr = UInt(32.W)
 }
@@ -63,8 +69,18 @@ class AIF extends Module{
         val in = Input(new ifDataBundle)
         val out = Output(new ifDataBundle)
     })
-    io.out.instr := RegNext(io.in.instr)
-    io.out.nPc := RegNext(io.in.nPc)
+    val regInstr = Reg(UInt(32.W))
+    val npc = Reg(UInt(32.W))
+    when (io.in.keep.asBool()){
+        regInstr := regInstr
+        npc := npc
+    }.otherwise{
+        regInstr := io.in.instr
+        npc := io.in.nPc
+    }
+    io.out.instr := regInstr
+    io.out.nPc := npc
+    io.out.keep := DontCare
 }
 
 class AID extends Module{
@@ -73,6 +89,7 @@ class AID extends Module{
             new Bundle{
                 val data = Input(new idDataBundle)
                 val ctr = new Bundle{
+                    val exp = Input(new expCtrBundle)
                     val exec = Input(new execCtrBundle)
                     val mem = Input(new memCtrBundle)
                     val wb = Input(new wbCtrBundle)
@@ -83,6 +100,7 @@ class AID extends Module{
             new Bundle{
                 val data = Output(new idDataBundle)
                 val ctr = new Bundle{
+                    val exp = Output(new expCtrBundle)
                     val exec = Output(new execCtrBundle)
                     val mem = Output(new memCtrBundle)
                     val wb = Output(new wbCtrBundle)
@@ -94,18 +112,21 @@ class AID extends Module{
     val exec = Wire(new execCtrBundle)
     val mem = Wire(new memCtrBundle)
     val wb = Wire(new wbCtrBundle)
-
+    val exp = Wire(new expCtrBundle)
     when(io.in.ctr.flush === 1.U){
         val tmpWire = WireInit(0.U(300.W))
+        exp:= tmpWire.asTypeOf(new expCtrBundle)
         exec := tmpWire.asTypeOf(new execCtrBundle)
         mem := tmpWire.asTypeOf(new memCtrBundle)
         wb := tmpWire.asTypeOf(new wbCtrBundle)
     }.otherwise{
+        exp <> io.in.ctr.exp
         exec <> io.in.ctr.exec
         mem <> io.in.ctr.mem
         wb <> io.in.ctr.wb
     }
     io.out.data <> RegNext(io.in.data)
+    io.out.ctr.exp <> RegNext(exp)
     io.out.ctr.exec <> RegNext(exec)
     io.out.ctr.mem <> RegNext(mem)
     io.out.ctr.wb <> RegNext(wb)

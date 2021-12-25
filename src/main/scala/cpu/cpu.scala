@@ -71,6 +71,7 @@ class cpu extends Module {
     interAID.io.in.ctr.exec <> ctr.io.out.exec
     interAID.io.in.ctr.mem <> ctr.io.out.mem
     interAID.io.in.ctr.wb <> ctr.io.out.wb
+    interAID.io.in.ctr.exp <> ctr.io.out.exp
     interAID.io.in.ctr.flush := flush
     interAID.io.in.data.Rs := interAIF.io.out.instr(25, 21)
     interAID.io.in.data.Rd := interAIF.io.out.instr(15, 11)
@@ -80,6 +81,7 @@ class cpu extends Module {
     interAID.io.in.data.raOut := regs.io.Rs_out
     interAID.io.in.data.nPc := interAIF.io.out.nPc
     interAID.io.in.data.instrTarget := interAIF.io.out.instr(25, 0)
+
     when(io.init.reset === 0.U) {
         printf("")
         printf("======ID========\n")
@@ -167,6 +169,17 @@ class cpu extends Module {
       )
     )
 
+    val loadStallUse = Module(new loadStall)
+    loadStallUse.io.regDst := regDst
+    loadStallUse.io.isLoad := interAID.io.out.ctr.exp.load
+    loadStallUse.io.instr := interAIF.io.out.instr
+    when(loadStallUse.io.aidFlush === 1.U){
+        interAID.io.in.ctr.flush := 1.U
+    }
+    interAIF.io.in.keep := loadStallUse.io.keep
+    when(loadStallUse.io.pcEn === 0.U){
+        pc := pc
+    }
     interAEXEC.io.in.data.aluOut := aluUse.io.ALU_out
     interAEXEC.io.in.data.less := aluUse.io.Less
     interAEXEC.io.in.data.overflow := aluUse.io.Overflow_out
@@ -178,7 +191,9 @@ class cpu extends Module {
     interAEXEC.io.in.ctr.flush := flush
     interAEXEC.io.in.ctr.mem <> interAID.io.out.ctr.mem
     interAEXEC.io.in.ctr.wb <> interAID.io.out.ctr.wb
-
+    when(interAID.io.out.ctr.exp.canOverFlow === 1.U && aluUse.io.Overflow_out === 1.U){
+        interAEXEC.io.in.ctr.wb.wrEn := 0.U
+    }
     when(io.init.reset === 0.U) {
         printf("======EXEC========\n")
         printf(p"${interAEXEC.io.in.data}\n")
@@ -265,6 +280,9 @@ class cpu extends Module {
         printf("======forward======\n")
         printf(p"flush ${flush}\n")
         printf(p"${fwd.io}\n")
+        printf("==============\n")
+        printf("======loadStall======\n")
+        printf(p"loadStall ${loadStallUse.io}\n")
         printf("==============\n\n")
     }
     //watch

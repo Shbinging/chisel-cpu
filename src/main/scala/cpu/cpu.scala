@@ -157,7 +157,7 @@ class cpu extends Module {
         0.U(2.W)
       )
     )
-    NPCB := (interAID.io.out.data.nPc.asSInt() + imm32.asSInt() << 2).asUInt()
+    NPCB := (interAID.io.out.data.nPc.asSInt() +  (Cat(Fill((16), imm32(15)), imm32(15, 0)).asSInt() << 2)).asUInt()
 
     val regDst = Wire(UInt(5.W))
     regDst := MuxLookup(

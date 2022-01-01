@@ -12,24 +12,29 @@ import chisel3.iotesters.{PeekPokeTester, Driver, ChiselFlatSpec}
 
 class CPU_test(c: cpu) extends PeekPokeTester(c){
     poke(c.io.init.reset, 1.U)
-    var instrUse = Array(536936448L.U,
-537001985L.U,
-537133066L.U,
-679804931L.U,
-335872007L.U,
-545718269L.U,
-79691786L.U,
-2242592L.U,
-541130752L.U,
-551682048L.U,
-549912575L.U,
-268500986L.U,
-545652734L.U,
-77594626L.U,
-537001985L.U,
-268435457L.U,
-537001984L.U,
-)
+    var instrUse = Array(
+        538902780L.U,
+268435462L.U,
+2952658944L.U,
+2414149640L.U,
+2414215172L.U,
+10940450L.U,
+2414149632L.U,
+10485769L.U,
+536936449L.U,
+537001986L.U,
+2950758400L.U,
+2950889468L.U,
+603979768L.U,
+537067528L.U,
+6352905L.U,
+603914248L.U,
+600047616L.U,
+0.U,
+0.U,
+0.U,
+0.U
+    )
     for(i <- 0 to 63){
         poke(c.io.init.writeAddr, (i * 4).asUInt());
         if (i < instrUse.length){
@@ -41,7 +46,10 @@ class CPU_test(c: cpu) extends PeekPokeTester(c){
     }
     step(1)
     poke(c.io.init.reset, 0.U)
-    step(1000)
+    // while(peek(c.io.watch.pc).asUInt() != 68.U){
+    //     step(1)
+    // }
+    step(60)
     print(peek(c.io.watch.regs(4)).toString()+"\n")
     print(peek(c.io.watch.regs(2)).toString()+"\n")
     //print(peek(c.io.watch.regs(2)).toString()+"\n")
